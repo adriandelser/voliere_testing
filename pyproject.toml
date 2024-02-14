@@ -8,7 +8,12 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
+matplotlib = "^3.8.2"
+gflow = {path = "/Users/adriandelser/Desktop/ENAC/gflow"}
 
+
+[tool.poetry.group.dev.dependencies]
+ipykernel = "^6.29.2"
 
 [build-system]
 requires = ["poetry-core"]
