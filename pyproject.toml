@@ -10,6 +10,11 @@ readme = "README.md"
 python = "^3.11"
 matplotlib = "^3.8.2"
 gflow = {path = "/Users/adriandelser/Desktop/ENAC/gflow"}
+djitellopy = {path = "/Users/adriandelser/Desktop/ENAC/DJITelloPy"}
+pybullet = "^3.2.6"
+scenebuilder = {path = "/Users/adriandelser/Desktop/ENAC/scenebuilder"}
+flask = "^3.0.2"
+requests = "^2.31.0"
 
 
 [tool.poetry.group.dev.dependencies]

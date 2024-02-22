@@ -36,6 +36,17 @@ ax.set_zlabel('Z')
 #set the size of the plot to be large
 fig.set_size_inches(8, 8)
 
+def update_positions(drones):
+    global i 
+    for idx, path in enumerate(paths):
+        drones[idx, :3] = path[:i][-1]
+        drones[idx, 2] = 4
+        # drones[idx, 2] += 3*np.sin(i/10) * 0.1 #make them bounce for fun
+    i += 1
+    i=max(i%len(paths[0]), 1) #loop back to the beginning of the path if we reach the end
+    return drones
+
+
 # Assuming 'stemlines' is the LineCollection object from the initial ax.stem call
 def update_stemlines(stemlines, new_positions):
     segments = []
@@ -47,14 +58,6 @@ def update_stemlines(stemlines, new_positions):
 
 
 
-def update_positions(drones):
-    global i 
-    for idx, path in enumerate(paths):
-        drones[idx, :3] = path[:i][-1]
-        drones[idx, 2] = 4
-        # drones[idx, 2] += 3*np.sin(i/10) * 0.1 #make them bounce for fun
-    i += 1
-    return drones
 
 # Function to update the plot
 def update_plot(frame, plot, stemlines):
@@ -72,7 +75,7 @@ def update_positions_thread():
     global stop_thread
     while True:
         update_positions(drones)
-        time.sleep(0.02)
+        time.sleep(0.01)
         if stop_thread:
             break
 

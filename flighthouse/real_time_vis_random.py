@@ -11,7 +11,7 @@ import threading
 
 
 # Initialize drones
-N = 5  # Number of drones
+N = 10  # Number of drones
 drones = np.full((N, 3), np.nan)  # Initial positions of the drones
 
 # Set up the figure and 3D axis
@@ -61,7 +61,7 @@ def update_plot(frame, plot, stemlines):
 
 
 # Creating animation
-ani = FuncAnimation(fig, update_plot, fargs=(plot, stemlines), frames=None, interval=200, blit=False, cache_frame_data=False)
+ani = FuncAnimation(fig, update_plot, fargs=(plot, stemlines), frames=None, interval=20, blit=False, cache_frame_data=False)
 
 #create a function which updates the positions of drones in a different thread
 def update_positions_thread():
