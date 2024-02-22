@@ -1,8 +1,7 @@
 import sys
 sys.path.insert(0,"./common")
 from NatNetClient import NatNetClient
-# from PyQt5.QtCore import pyqtSignal, QObject, QTimer, pyqtSlot
-# from PyQt5.QtWidgets import QApplication
+
 from collections import deque
 import numpy as np
 import socket

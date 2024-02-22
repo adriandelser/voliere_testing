@@ -1,13 +1,13 @@
 import sys
 sys.path.append('.')
 from common.voliere import VolierePosition
-from running_utils import initialize_id_swarm, connect_swarm
+from common.running_utils import initialize_id_swarm
 
 #---------- OpTr- ACID - -----IP------
-ACS = ['69','68']
-# ACS = ['69']
+ACS = ['69','68', '51']
+TELLO_ACS = ['69', '68']
 
-AC_LIST = [[f"{ID}", f"{ID}", f'192.168.1.{ID}'] for ID in ACS]
+AC_LIST = [[f"{ID}", f"{ID}", f'192.168.1.{ID}'] for ID in ACS if ID in TELLO_ACS]
 AC_ID_LIST = [[_[0], _[1]] for _ in AC_LIST] # [['51', '51'], ['65', '65'], ['69', '69']]
 
 

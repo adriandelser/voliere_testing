@@ -44,16 +44,16 @@ def connect_swarm(swarm)->None:
     print('Connected to Tello Swarm...')
     return None
 
-def initialise_voliere(swarm,AC_ID_LIST):
-    voliere = VolierePosition(AC_ID_LIST, swarm.tellos, freq=40)
-    voliere.run()
-    sleep(4)
+# def initialise_voliere(swarm,AC_ID_LIST):
+#     voliere = VolierePosition(AC_ID_LIST, swarm.tellos, freq=40)
+#     voliere.run()
+#     sleep(4)
 
-    return voliere
+    # return voliere
 
-def convert_coords(desired):
-    tello_input = np.array([-desired[1], desired[0],0])
-    return tello_input
+# def convert_coords(desired):
+#     tello_input = np.array([-desired[1], desired[0],0])
+#     return tello_input
 
 def step_simulation(swarm, case:Case):
     # case.from
@@ -69,10 +69,10 @@ def step_simulation(swarm, case:Case):
                 vehicle.state=1
                 # swarm.tellos[idx].send_velocity_enu(convert_coords([0,0,0]), heading=0)
                 # Perform the landing sequence once
-                time.sleep(0.5)
+                # time.sleep(0.5)
                 print("landing")
                 # swarm.tellos[idx].move_down(40)
-                swarm.tellos[idx].land()
+                # swarm.tellos[idx].land()
                 vehicle.has_landed = True
                 pass
 

@@ -40,9 +40,9 @@ import argparse
 # import NatNet client
 import sys
 # sys.path.insert(0,"../common")
-from .NatNetClient import NatNetClient
+from NatNetClient import NatNetClient
 
-import requests
+
 
 # For pybullet :
 import pybullet as p
@@ -161,11 +161,45 @@ class Rigidbody():
 
 #------------------------------------------------------------------------------
 
+
+def store_track(ac_id, pos, t):
+  if ac_id in id_dict.keys():
+    track[ac_id].append((pos, t))
+    if len(track[ac_id]) > vel_samples:
+      track[ac_id].popleft()
+
+def compute_velocity(ac_id):
+  vel = [ 0., 0., 0. ]
+  if len(track[ac_id]) >= vel_samples:
+    nb = -1
+    for (p2, t2) in track[ac_id]:
+      nb = nb + 1
+      if nb == 0:
+        p1 = p2
+        t1 = t2
+      else:
+        dt = t2 - t1
+        if dt < 1e-5:
+          continue
+        vel[0] += (p2[0] - p1[0]) / dt
+        vel[1] += (p2[1] - p1[1]) / dt
+        vel[2] += (p2[2] - p1[2]) / dt
+        p1 = p2
+        t1 = t2
+    if nb > 0:
+      vel[0] /= nb
+      vel[1] /= nb
+      vel[2] /= nb
+  return vel
+
+
+
 class VolierePosition():
     def __init__(self, ac, vehicles, freq=20, server="192.168.1.240", dataport=int(1511), commandport=int(1510), vel_samples=int(4), verbose=False):
         self.freq = freq
         self.vel_samples = vel_samples
         self.vehicles = vehicles
+        print(f"vehicles given to volierePosition are {self.vehicles}")
         # rgbs = dict([(ac_id, Rigidbody(ac_id)) for ac_id in id_dict.keys()])
         # dictionary of ID associations
         self.id_dict = dict(ac)
@@ -184,7 +218,15 @@ class VolierePosition():
         self.natnet.set_client_address('0.0.0.0')
         self.natnet.set_print_level(0)  # 1 to print all frames
         self.natnet.rigid_body_marker_set_list_listener = self.receiveRigidBodyMarkerSetList
-
+        # self.natnet = NatNetClient(
+        #         server=server,
+        #         rigidBodyListListener=self.receiveRigidBodyList,
+        #         dataPort=dataport,
+        #         commandPort=commandport,
+        #         verbose=verbose)
+        # start natnet interface with new NatNet Class
+        # self.natnet = NatNetClient()
+        # self.natnet.rigidBodyListListener = self.receiveRigidBodyList
   
     def receiveRigidBodyMarkerSetList(self, rigid_body_data, marker_set_data, stamp):
 
@@ -194,6 +236,7 @@ class VolierePosition():
                 # skip if rigid body is not valid
                 continue
             i = str(rigid_body.id_num)
+            # print(f"vehicle = {i}, {self.vehicles.get(i)}")
             if i not in self.id_dict.keys():
                 continue
             pos = rigid_body.pos
@@ -206,49 +249,18 @@ class VolierePosition():
                     self.timestamp[i] = stamp
                 continue # too early for next message
             self.timestamp[i] = stamp
-            self.send_to_server(i, pos)
-            self.set_tello_attributes(i, pos, quat)
-            # vel = self.compute_velocity(i)
+            vel = self.compute_velocity(i)
             # ang_vel = self.compute_angular_velocity(i)
-            # dcm_0_0 = 1.0 - 2.0 * (quat[1] * quat[1] + quat[2] * quat[2])
-            # dcm_1_0 = 2.0 * (quat[0] * quat[1] - quat[3] * quat[2])
-            #set velocities only for the vehicles which are tellos
-            # if i not in self.vehicles:
-            #     continue
-            # self.vehicles[i].set_position_enu(np.array([pos[0],pos[1],pos[2]]))
-            # self.vehicles[i].set_velocity_enu(np.array([vel[0],vel[1],vel[2]]))
-            # self.vehicles[i].set_heading(np.arctan2(dcm_1_0, dcm_0_0))
-            # self.vehicles[i].set_quaternion(quat)
-            # # self.vehicles[i].set_angular_velocity(np.array(ang_vel))
-            # self.vehicles[i].valid = True
-            # # print(i,pos)
+            dcm_0_0 = 1.0 - 2.0 * (quat[1] * quat[1] + quat[2] * quat[2])
+            dcm_1_0 = 2.0 * (quat[0] * quat[1] - quat[3] * quat[2])
+            self.vehicles[i].set_position_enu(np.array([pos[0],pos[1],pos[2]]))
+            self.vehicles[i].set_velocity_enu(np.array([vel[0],vel[1],vel[2]]))
+            self.vehicles[i].set_heading(np.arctan2(dcm_1_0, dcm_0_0))
+            self.vehicles[i].set_quaternion(quat)
+            # self.vehicles[i].set_angular_velocity(np.array(ang_vel))
+            self.vehicles[i].valid = True
+            # print(i,pos)
     
-    def send_to_server(self, id, pos:dict):
-        # print('sending')
-        url = 'http://127.0.0.1:8000/positions'
-        # data = {"69": [1,1,1]}
-        data = {str(id):[pos[0], pos[1], pos[2]]}
-        headers = {'Content-Type': 'application/json'}
-        try:
-            response = requests.post(url, json=data, headers=headers)
-        except Exception:
-            pass
-
-
-    def set_tello_attributes(self, id, pos, quat):
-        # print("setting tello attributes")
-        if id not in self.vehicles:
-            return
-        vel = self.compute_velocity(id)
-        dcm_0_0 = 1.0 - 2.0 * (quat[1] * quat[1] + quat[2] * quat[2])
-        dcm_1_0 = 2.0 * (quat[0] * quat[1] - quat[3] * quat[2])
-        self.vehicles[id].set_position_enu(np.array([pos[0],pos[1],pos[2]]))
-        self.vehicles[id].set_velocity_enu(np.array([vel[0],vel[1],vel[2]]))
-        self.vehicles[id].set_heading(np.arctan2(dcm_1_0, dcm_0_0))
-        self.vehicles[id].set_quaternion(quat)
-        # self.vehicles[id].set_angular_velocity(np.array(ang_vel))
-        self.vehicles[id].valid = True
-
     def run(self):
         # self.natnet.run()
         is_running = self.natnet.run()

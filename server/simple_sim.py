@@ -3,20 +3,22 @@ from gflow.cases import Cases, Case
 # from time import time, sleep
 from gflow.utils.json_utils import load_from_json
 from gflow.utils.simulation_utils import run_simulation, set_new_attribute
+from gflow.utils.plot_utils import PlotTrajectories 
+from gflow.plotting.main_plot import SimulationVisualizer
 from scenebuilder.gui_sim import InteractivePlot
 from scenebuilder.observer_utils import Observer
 import sys
 
 import time
 from djitellopy import TelloSwarm
-sys.path.insert(0,"common_murat")
+# sys.path.insert(0,"common_murat")
 sys.path.append('.')
 
 from common.voliere import VolierePosition
 # from common_murat.voliere import Vehicle as Target
 import numpy as np
 
-from running_utils import initialize_id_swarm, connect_swarm, initialise_voliere, xyz_to_enu, run_real_case
+from common.running_utils import initialize_id_swarm, connect_swarm, xyz_to_enu, run_real_case
 
 # from drone_monitoring_better import ClientVoliere
 # from PyQt5.QtWidgets import QApplication
@@ -31,10 +33,10 @@ NEXT_GOAL_LIST:list = [[ [0,0,0.5], [2,2,0.5], [3,2,0.5]],
 
 
 #---------- OpTr- ACID - -----IP------
-ACS = ['69','68']
-# ACS = ['69']
+ACS = ['69', '68', '51', '888']
+TELLO_ACS = ['69', '68']
 
-AC_LIST = [[f"{ID}", f"{ID}", f'192.168.1.{ID}'] for ID in ACS]
+AC_LIST = [[f"{ID}", f"{ID}", f'192.168.1.{ID}'] for ID in ACS if ID in TELLO_ACS]
 AC_ID_LIST = [[_[0], _[1]] for _ in AC_LIST] # [['51', '51'], ['65', '65'], ['69', '69']]
 
 
@@ -61,7 +63,7 @@ class CaseMaker(Observer):
         self.gui = InteractivePlot()
         self.gui.add_observer(self)
         self.pos = []
-        self.swarm = None
+        self.swarm:TelloSwarm = None
 
 
     def call(self):
@@ -80,8 +82,8 @@ class CaseMaker(Observer):
         # set_new_attribute(case, "source_strength", new_attribute_value=1)
         set_new_attribute(case, "sink_strength", new_attribute_value=5)
         set_new_attribute(case, "max_speed", new_attribute_value=0.5)
-        set_new_attribute(case, "imag_source_strength", new_attribute_value=0.5)
-        set_new_attribute(case, "source_strength", new_attribute_value=5)
+        set_new_attribute(case, "imag_source_strength", new_attribute_value=5)
+        set_new_attribute(case, "source_strength", new_attribute_value=1)
         # set_new_attribute(case, "mode", new_attribute_value="radius")
         set_new_attribute(case, "turn_radius", new_attribute_value=0.01)
 
@@ -147,7 +149,7 @@ class CaseMaker(Observer):
             time.sleep(1)
             self.swarm.takeoff()
             starttime = time.time()
-            while time.time()-starttime <2:
+            while time.time()-starttime <5:
                 for tello in self.swarm.tellos:
                     tello.send_velocity_enu([0,0,0], heading=0)
             
@@ -190,12 +192,27 @@ class CaseMaker(Observer):
             print('Finished moving !') #Finished 
             result = run_real_case(case=case,swarm=self.swarm,t = 500,update_every=1,stop_at_collision=True,max_avoidance_distance=20)
 
-
+            
+            case.to_dict(file_path="realflight_output.json")
             # # self.swarm.move_down(int(40))
             self.swarm.land()
             voliere.stop()
             self.swarm.end()
             # time.sleep(1)
+            # create ouput json
+
+            trajectory_plot = PlotTrajectories(case, update_every=1)
+            # trajectory_plot.BUILDING_EDGE_COLOUR
+            LIMS = (-5,5)
+            # XLIMS = (575600,576000)
+            # YLIMS = (6275100,6275700)
+            trajectory_plot.ax.set_xlim(LIMS)
+            trajectory_plot.ax.set_ylim(LIMS)
+            trajectory_plot.show()
+
+            # visualisation part
+            visualizer = SimulationVisualizer('realflight_output.json')
+            visualizer.show_plot()
 
 
         except (KeyboardInterrupt, SystemExit):

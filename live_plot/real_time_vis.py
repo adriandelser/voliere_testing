@@ -45,7 +45,7 @@ class Drones:
 
 if __name__ == '__main__':
     # Initialize drones
-    N = 3  # Number of drones
+    N = 4  # Number of drones
 
     d = Drones(N)
     # drones = np.full((N, 3), np.nan)  # Initial positions of the drones

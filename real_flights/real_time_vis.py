@@ -3,8 +3,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
-from mpl_toolkits.mplot3d import Axes3D
-from gflow.utils.json_utils import load_from_json
+
 import time
 import threading
 from drone_monitoring_better import ClientVoliere
@@ -72,19 +71,6 @@ if __name__ == '__main__':
     # Creating animation
     ani = FuncAnimation(fig, update_plot, fargs=(plot, d.drones, stemlines), frames=None, interval=20, blit=False, cache_frame_data=False)
 
-    # #create a function which updates the positions of drones in a different thread
-    # def update_positions_thread():
-    #     global stop_thread
-    #     while True:
-    #         update_positions(d.drones)
-    #         time.sleep(0.01)
-    #         if stop_thread:
-    #             break
-
-    #start the thread
-    # stop_thread = False
-    # thread = threading.Thread(target=update_positions_thread)
-    # thread.start()
     vvt = ClientVoliere(d)
 
     # Start the ClientVoliere in a separate thread

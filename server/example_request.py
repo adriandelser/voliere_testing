@@ -1,6 +1,6 @@
 import requests, json
 from pprint import pprint
-
+# from flask import jsonify
 
 url = 'http://127.0.0.1:8000/positions'
 
