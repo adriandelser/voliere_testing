@@ -133,7 +133,7 @@ for idx, poly in enumerate(surface_collections):
 # This will hold the current vertices for the visible segments of the path
 drone_path_vertices = [[] for _ in range(N)]
 
-def update_stemlines_and_paths(drones, paths_history):
+def update_stemlines_and_paths(paths_history):
     global surface_collections, drone_path_vertices
     
     for idx, history in enumerate(paths_history):
@@ -182,7 +182,7 @@ def update_plot(frame, plot, drones, paths_history):
     drones = update_positions(drones, paths_history)
     plot.set_data(drones[:, 0], drones[:, 1])
     plot.set_3d_properties(drones[:, 2])
-    update_stemlines_and_paths(drones, paths_history)
+    update_stemlines_and_paths(paths_history)
     return plot,
 
 i = 1

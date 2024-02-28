@@ -15,6 +15,14 @@ pybullet = "^3.2.6"
 scenebuilder = {path = "/Users/adriandelser/Desktop/ENAC/scenebuilder"}
 flask = "^3.0.2"
 requests = "^2.31.0"
+vispy = "^0.14.1"
+plotly = "^5.19.0"
+ipywidgets = "^8.1.2"
+nbformat = "^5.9.2"
+ipython = "^8.22.1"
+pyqtgraph = "^0.13.3"
+pyqt5 = "^5.15.10"
+pyopengl = "^3.1.7"
 
 
 [tool.poetry.group.dev.dependencies]

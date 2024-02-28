@@ -33,9 +33,9 @@ NEXT_GOAL_LIST:list = [[ [0,0,0.5], [2,2,0.5], [3,2,0.5]],
 
 
 #---------- OpTr- ACID - -----IP------
+#---------- OpTr- ACID - -----IP------
 ACS = ['60','61','62','64','65','66','67','68','69', '51', '888']
-TELLO_ACS = ['67','68','69']
-
+TELLO_ACS = ['64']
 
 
 AC_LIST = [[f"{ID}", f"{ID}", f'192.168.1.{ID}'] for ID in ACS if ID in TELLO_ACS]
@@ -87,7 +87,7 @@ class CaseMaker(Observer):
         set_new_attribute(case, "imag_source_strength", new_attribute_value=5)
         set_new_attribute(case, "source_strength", new_attribute_value=1)
         # set_new_attribute(case, "mode", new_attribute_value="radius")
-        set_new_attribute(case, "turn_radius", new_attribute_value=0.1)
+        set_new_attribute(case, "turn_radius", new_attribute_value=0.20)
 
         case.mode = 'radius'
         case.building_detection_threshold = 10
@@ -140,7 +140,7 @@ class CaseMaker(Observer):
         # voliere=initialise_voliere(swarm,AC_ID_LIST)
         print("Starting Natnet3.x interface at %s" % ("1234567"))
 
-        INIT_XYZS = {TELLO_ACS[idx]: np.append(vehicle.position[:2],0.5) for idx, vehicle in enumerate(case.vehicle_list)}
+        INIT_XYZS = {ACS[idx]: np.append(vehicle.position[:2],0.5) for idx, vehicle in enumerate(case.vehicle_list)}
         print(f"initial positions are {INIT_XYZS}")
 
 
@@ -152,7 +152,7 @@ class CaseMaker(Observer):
             self.swarm.takeoff()
             starttime = time.time()
             #make them all stop for 2 seconds
-            while time.time()-starttime <2:
+            while time.time()-starttime <3:
                 for tello in self.swarm.tellos:
                     tello.send_velocity_enu([0,0,0], heading=0)
             
@@ -162,42 +162,42 @@ class CaseMaker(Observer):
             # for the first x seconds, move the tellos to their initial positions
             while time.time()-starttime < 5:
                 
-                desired = [-0.2,-0.4,0]
+                desired = [0.2,0,0]
                 for idx, tello in enumerate(self.swarm.tellos):
-                    tello.fly_to_enu(INIT_XYZS[tello.ac_id], heading=0)
+                    # tello.fly_to_enu(INIT_XYZS[tello.ac_id], heading=0)
+                    tello.send_velocity_enu(desired, heading=0)
+            
+            # # self.swarm.tellos[0].send_velocity_enu([0,0,0], heading=0)
+
+            # print('Finished moving !') #Finished 
+            # result = run_real_case(case=case,swarm=self.swarm,t = 500,update_every=1,stop_at_collision=True,max_avoidance_distance=20)
 
             
-            # self.swarm.tellos[0].send_velocity_enu([0,0,0], heading=0)
-
-            print('Finished moving !') #Finished 
-            result = run_real_case(case=case,swarm=self.swarm,t = 500,update_every=1,stop_at_collision=True,max_avoidance_distance=20)
-
-            
-            case.to_dict(file_path="realflight_output.json")
-            # # self.swarm.move_down(int(40))
-            self.swarm.land()
-            voliere.stop()
-            self.swarm.end()
-            # time.sleep(1)
-            # create ouput json
-
-            trajectory_plot = PlotTrajectories(case, update_every=1)
-            # trajectory_plot.BUILDING_EDGE_COLOUR
-            LIMS = (-5,5)
-            # XLIMS = (575600,576000)
-            # YLIMS = (6275100,6275700)
-            trajectory_plot.ax.set_xlim(LIMS)
-            trajectory_plot.ax.set_ylim(LIMS)
-            trajectory_plot.show()
-
-            # visualisation part
-            visualizer = SimulationVisualizer('realflight_output.json')
-            visualizer.show_plot()
-
-
+            # case.to_dict(file_path="realflight_output.json")
+            # # # self.swarm.move_down(int(40))
             # self.swarm.land()
             # voliere.stop()
             # self.swarm.end()
+            # # time.sleep(1)
+            # # create ouput json
+
+            # trajectory_plot = PlotTrajectories(case, update_every=1)
+            # # trajectory_plot.BUILDING_EDGE_COLOUR
+            # LIMS = (-5,5)
+            # # XLIMS = (575600,576000)
+            # # YLIMS = (6275100,6275700)
+            # trajectory_plot.ax.set_xlim(LIMS)
+            # trajectory_plot.ax.set_ylim(LIMS)
+            # trajectory_plot.show()
+
+            # # visualisation part
+            # visualizer = SimulationVisualizer('realflight_output.json')
+            # visualizer.show_plot()
+
+
+            self.swarm.land()
+            voliere.stop()
+            self.swarm.end()
 
         except (KeyboardInterrupt, SystemExit):
             print("Shutting down natnet interfaces...")

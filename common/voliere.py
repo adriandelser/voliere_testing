@@ -189,7 +189,6 @@ class VolierePosition():
     def receiveRigidBodyMarkerSetList(self, rigid_body_data, marker_set_data, stamp):
 
         for rigid_body in rigid_body_data.rigid_body_list:
-
             if not rigid_body.tracking_valid:
                 # skip if rigid body is not valid
                 continue
@@ -206,6 +205,7 @@ class VolierePosition():
                     self.timestamp[i] = stamp
                 continue # too early for next message
             self.timestamp[i] = stamp
+            # print("posting", time())
             self.send_to_server(i, pos)
             self.set_tello_attributes(i, pos, quat)
             # vel = self.compute_velocity(i)
@@ -232,6 +232,7 @@ class VolierePosition():
         try:
             response = requests.post(url, json=data, headers=headers)
         except Exception:
+            print("server issue")
             pass
 
 

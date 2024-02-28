@@ -1,4 +1,4 @@
-
+from __future__ import annotations
 from gflow.vehicle import Vehicle
 from gflow.cases import Case, Cases
 from typing import List
@@ -10,6 +10,8 @@ from djitellopy import TelloSwarm
 # from voliere import VolierePosition
 # from voliere import Vehicle as Target
 import numpy as np
+from numpy.typing import ArrayLike
+import requests
 
 
 #write a function which converts xyz coordinates to ENU coordinates
@@ -24,7 +26,7 @@ def xyz_to_enu(x,y,z,lat,lon):
     return x_e, y_e, z_e
 
 
-def initialize_id_swarm(ac_list:list):
+def initialize_id_swarm(ac_list:list)->tuple[list,TelloSwarm]:
     '''Initialise the parameters'''
     ip_list = [_[2] for _ in ac_list]
     swarm = TelloSwarm.fromIps(ip_list)
@@ -55,31 +57,38 @@ def connect_swarm(swarm)->None:
 #     tello_input = np.array([-desired[1], desired[0],0])
 #     return tello_input
 
-def step_simulation(swarm, case:Case):
+def step_simulation(swarm:TelloSwarm, case:Case):
     # case.from
 
     case_vehicle_list = case.vehicle_list
     max_avoidance_distance = case.max_avoidance_distance
+    # for idx,vehicle in enumerate(case_vehicle_list):
+    #     #update the simulated vehicle with its real position
+    #     real_position = swarm.tellos[idx].get_position_enu()
+    #     vehicle.position = real_position
     """'Step the simulation by one timstep, list_of_vehicles is case.vehicle_list"""
     for idx, vehicle in enumerate(case_vehicle_list):
         # if the current vehicle has arrived, do nothing, continue looking at the other vehicles
         # print("close to goal?",np.linalg.norm(vehicle.position-case.vehicle_list[0].goal)<0.5, f"state = {vehicle.state}")
-        if vehicle.state == 1 or np.linalg.norm(vehicle.position-case.vehicle_list[idx].goal)<0.5:
+        if vehicle.state == 1 or np.linalg.norm(vehicle.position-case.vehicle_list[idx].goal)<0.25:
             if not vehicle.has_landed:
                 vehicle.state=1
                 # swarm.tellos[idx].send_velocity_enu(convert_coords([0,0,0]), heading=0)
                 # Perform the landing sequence once
                 # time.sleep(0.5)
                 print("landing")
+                swarm.tellos[idx].send_velocity_enu([0,0,0], heading=0)
                 # swarm.tellos[idx].move_down(40)
                 # swarm.tellos[idx].land()
                 vehicle.has_landed = True
                 pass
+            else:
+                swarm.tellos[idx].send_velocity_enu([0,0,0], heading=0)
 
             # Skip the rest of the loop and continue with the next vehicle
             continue
 
-        #update the simulated vehicle with its real position
+        #update the simulated vehicle with its real position again
         real_position = swarm.tellos[idx].get_position_enu()
         vehicle.position = real_position
         # update the vehicle's personal knowledge of other drones by only keeping those that meet specific conditions:
@@ -94,12 +103,23 @@ def step_simulation(swarm, case:Case):
 
         velocity = vehicle.velocity
         velocity[2] = 0 #ensure z velocity is 0
+
+        # send_to_server(id = swarm.tellos[idx].ac_id, vec = velocity)
         # print(f"In file running_utils.py, velocity is {velocity}")
         # velocity = velocity * 1
         swarm.tellos[idx].send_velocity_enu(velocity, heading=0)
 
     return None
 
+def send_to_server(id, vec:ArrayLike):
+    '''Method to send a vehicles latest instruction to the server'''
+    url = 'http://127.0.0.1:8000/desired'
+    data = {str(id):[vec[0], vec[1], vec[2]]}
+    headers = {'Content-Type': 'application/json'}
+    try:
+        response = requests.post(url, json=data, headers=headers)
+    except Exception:
+        pass
 
 def run_real_case(
     case: Case,
