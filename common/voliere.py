@@ -28,8 +28,8 @@ UnicodeDecodeError: 'utf-8' codec can't decode byte 0x91 in position 0: invalid 
 '''
 
 
-from __future__ import print_function
-
+from __future__ import print_function, annotations
+from typing import TYPE_CHECKING, Optional
 import sys
 from os import path, getenv
 from time import time, sleep
@@ -50,6 +50,9 @@ from time import sleep
 # import pybullet_data
 import pdb
 import numpy as np
+
+if TYPE_CHECKING:
+    from gflow.cases import Case
 
 # import requests
 
@@ -187,7 +190,6 @@ class VolierePosition():
 
   
     def receiveRigidBodyMarkerSetList(self, rigid_body_data, marker_set_data, stamp):
-
         for rigid_body in rigid_body_data.rigid_body_list:
             if not rigid_body.tracking_valid:
                 # skip if rigid body is not valid

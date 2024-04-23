@@ -9,11 +9,11 @@ import time
 import threading
 from drone_monitoring_better import ClientVoliere
 
-# output_data = load_from_json('example_output.json')
-# vehicles = output_data['vehicles']
-# paths= [v['path'] for v in vehicles]
+output_data = load_from_json('example_output.json')
+vehicles = output_data['vehicles']
+paths= [v['path'] for v in vehicles]
 
-
+# print(paths)
 
 
 def update_positions(drones):
@@ -72,23 +72,23 @@ if __name__ == '__main__':
     # Creating animation
     ani = FuncAnimation(fig, update_plot, fargs=(plot, d.drones, stemlines), frames=None, interval=20, blit=False, cache_frame_data=False)
 
-    # #create a function which updates the positions of drones in a different thread
-    # def update_positions_thread():
-    #     global stop_thread
-    #     while True:
-    #         update_positions(d.drones)
-    #         time.sleep(0.01)
-    #         if stop_thread:
-    #             break
+    #create a function which updates the positions of drones in a different thread
+    def update_positions_thread():
+        global stop_thread
+        while True:
+            update_positions(d.drones)
+            time.sleep(0.01)
+            if stop_thread:
+                break
 
-    #start the thread
-    # stop_thread = False
-    # thread = threading.Thread(target=update_positions_thread)
-    # thread.start()
-    vvt = ClientVoliere(d)
+    # start the thread
+    stop_thread = False
+    thread = threading.Thread(target=update_positions_thread)
+    thread.start()
+    # vvt = ClientVoliere(d)
 
     # Start the ClientVoliere in a separate thread
-    threading.Thread(target=vvt.start, daemon=True).start()
+    # threading.Thread(target=vvt.start, daemon=True).start()
     # threading.Thread(target=print, daemon=True).start()
 
     plt.show()

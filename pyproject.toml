@@ -9,7 +9,6 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.11"
 matplotlib = "^3.8.2"
-gflow = {path = "/Users/adriandelser/Desktop/ENAC/gflow"}
 djitellopy = {path = "/Users/adriandelser/Desktop/ENAC/DJITelloPy"}
 pybullet = "^3.2.6"
 scenebuilder = {path = "/Users/adriandelser/Desktop/ENAC/scenebuilder"}
@@ -23,6 +22,7 @@ ipython = "^8.22.1"
 pyqtgraph = "^0.13.3"
 pyqt5 = "^5.15.10"
 pyopengl = "^3.1.7"
+gflow = {path = "/Users/adriandelser/Desktop/ENAC/gflow"}
 
 
 [tool.poetry.group.dev.dependencies]

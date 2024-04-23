@@ -152,7 +152,7 @@ class CaseMaker(Observer):
             self.swarm.takeoff()
             starttime = time.time()
             #make them all stop for 2 seconds
-            while time.time()-starttime <3:
+            while time.time()-starttime <4:
                 for tello in self.swarm.tellos:
                     tello.send_velocity_enu([0,0,0], heading=0)
             

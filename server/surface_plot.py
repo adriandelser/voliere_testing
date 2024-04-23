@@ -115,7 +115,7 @@ def update_positions_thread(d:Drones):
                 if response.status_code == 200:
                     try:
                         positions = response.json()
-                        new_positions = np.array([p for id, p in positions.items()]) + np.array([0,0,4])
+                        new_positions = np.array([p for id, p in positions.items()]) + np.array([0,0,0])
                         new_ids = [id for id in positions.keys()]
                         # Ensure the new data matches the expected shape
                         if new_positions.ndim == 2 and new_positions.shape[1] == 3:
@@ -131,7 +131,7 @@ def update_positions_thread(d:Drones):
                     print("Error:", response.status_code, response.text)
             except Exception as e:
                 print(e.args, "GET request unsuccessful")
-            time.sleep(0.01)
+            time.sleep(0.05)
             if stop_position_thread:
                 break
 
@@ -147,7 +147,7 @@ def update_paths_thread(d:Drones):
                 if response.status_code == 200:
                     try:
                         paths = response.json()
-                        new_paths = np.array([p for id, p in paths.items()])+np.array([0,0,4])
+                        new_paths = np.array([p for id, p in paths.items()])+np.array([0,0,0])
 
                         # new_ids = [id for id in positions.keys()]
                         # Ensure the new data matches the expected shape
@@ -163,20 +163,20 @@ def update_paths_thread(d:Drones):
                     print("Error:", response.status_code, response.text)
             except Exception as e:
                 print(e.args, "GET request unsuccessful")
-            time.sleep(0.01)
+            time.sleep(0.05)
             if stop_paths_thread:
                 break
 
 if __name__ == "__main__":
     # Initialize drones
-    N = 9  # Number of drones
+    N = 2  # Number of drones
     d = Drones(N)
     #start the thread
     stop_position_thread = False
     stop_paths_thread = False
     paths = [[] for _ in range(N)]
     drones = np.full((N, 3), np.nan)  # Initial positions of the drones
-    history_length = 600  # Number of past points to visualize
+    history_length = 100  # Number of past points to visualize
     paths_history = [np.full((history_length, 3), np.nan) for _ in range(N)]  # History of positions for each drone
 
     # Set up the figure and 3D axis
@@ -211,7 +211,7 @@ if __name__ == "__main__":
     drone_path_vertices = [[] for _ in range(N)]
     i = 1
     # Creating animation
-    ani = FuncAnimation(fig, update_plot, fargs=(plot, ids, d), frames=None, interval=25, blit=False, cache_frame_data=False)
+    ani = FuncAnimation(fig, update_plot, fargs=(plot, ids, d), frames=None, interval=100, blit=False, cache_frame_data=False)
 
     pos_thread = threading.Thread(target=update_positions_thread,args=[d])
     paths_thread = threading.Thread(target=update_paths_thread, args=[d])

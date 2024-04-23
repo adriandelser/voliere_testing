@@ -35,7 +35,8 @@ def update_plot(frame, plot, ids_ax, d:Drones, stemlines):
     return [plot, *ids]
 
 class Drones:
-    def __init__(self, N:int) -> None:
+    def __init__(self, N) -> None:
+        # N = len(id_list)
         self.drones = np.full((N,3), np.nan)
         # Add IDs for each drone, for example starting from 01
         self.ids = [f"{i:02d}" for i in range(1, N+1)]
@@ -43,7 +44,7 @@ class Drones:
 
 if __name__ == '__main__':
     # Initialize drones
-    N = 9  # Number of drones
+    N = 2  # Number of drones
 
     d = Drones(N)
     # drones = np.full((N, 3), np.nan)  # Initial positions of the drones

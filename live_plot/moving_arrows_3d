@@ -1,0 +1,127 @@
+# import matplotlib.pyplot as plt
+# import numpy as np
+# from mpl_toolkits.mplot3d import Axes3D
+
+# # Create meshgrid for the 3D space
+# X, Y, Z = np.meshgrid(np.linspace(0, 10, 10), np.linspace(0, 10, 10), np.linspace(0, 10, 1))
+
+# # Generate random components for the vectors
+# U, V, W = np.random.rand(10, 10, 1), np.random.rand(10, 10, 1), np.random.rand(10, 10, 1)
+
+# fig = plt.figure()
+# ax = fig.add_subplot(111, projection='3d')
+
+# # Creating the 3D quiver plot
+# q = ax.quiver(X, Y, Z, U, V, W)
+# print(f"{q.get_offsets()=}")
+# # q.set_offsets(q.get_offsets() - np.array([0, 5]))
+
+# # Set axis limits to see the shift clearly
+# ax.set_xlim([0, 10])
+# ax.set_ylim([0, 10])
+# ax.set_zlim([-5, 10])  # Extending z-limits to visualize the downward shift
+
+# plt.draw()
+# plt.pause(2)
+
+# # Direct manipulation of offsets like in 2D isn't supported in 3D.
+# # This section is intended to reflect the request but isn't executable as-is in a 3D context.
+# # In actual practice, you would need to recreate the quiver plot with updated Z values or
+# # adjust your data before plotting to achieve the desired effect.
+
+# plt.pause(10)  # Pause to view the final plot before closing
+
+
+# from matplotlib import pyplot as plt
+# from mpl_toolkits.mplot3d import axes3d
+# from matplotlib.animation import FuncAnimation
+# import numpy as np
+
+# fig = plt.figure()
+# ax = fig.add_subplot(111, projection='3d')
+
+# num_frames = 50
+# theta = np.linspace(0,2*np.pi, 10, endpoint=False)
+# r = np.arange(1,2.1)
+# z = np.arange(-2,2.1,1)
+
+
+# def compute_segs(i):
+#     offset = 2*i*np.pi/num_frames
+#     theta2,r2, z2 = np.meshgrid(theta+offset,r,z)
+
+#     x = r2*np.cos(theta2)
+#     y = r2*np.sin(theta2)
+
+#     u = x+0.2*np.cos(4*theta2)
+#     v = y
+#     w = z2+0.2*np.sign(z2)*np.sin(4*theta2)
+
+#     return x,y,z2,u,v,w
+
+
+# segs = compute_segs(0)
+# cols = ['b' for x in segs[0].ravel()]
+# cols[0] = 'r'
+# quivers = ax.quiver(*segs, length=0.1, colors = cols, normalize=True)
+# print(np.array(quivers._segments3d).shape)
+# ax.set_xlim([-3,3])
+# ax.set_ylim([-3,3])
+# ax.set_zlim([-3,3])
+# def animate(i):
+
+#     segs = np.array(compute_segs(i)).reshape(6,-1)
+
+#     new_segs = [[[x,y,z],[u,v,w]] for x,y,z,u,v,w in zip(*segs.tolist())]
+#     quivers.set_segments(new_segs)
+#     print(quivers.get_paths(), quivers.__class__.__name__)
+
+#     # print(quivers.get_segments())
+
+#     return quivers
+
+
+# ani = FuncAnimation(fig, animate, frames = num_frames, interval = 1000, blit=False)
+# # ani.save('update_3d_quiver.gif', writer='imagemagick')
+
+# plt.show()
+
+
+from matplotlib import pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib.animation import FuncAnimation
+import numpy as np
+
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+num_frames = 50  # Number of frames for the animation
+# Initial position and vector
+x, y, z = [0], [0], [0]  # Starting position of the arrow
+u, v, w = [1], [0], [0]  # Direction of the arrow
+
+# Create a single arrow
+quiver = ax.quiver(x, y, z, u, v, w, color='r', length=1, normalize=True)
+# print(quiver.get_segments())
+# quiver.set_UVC(1,1,1)
+print(np.array(quiver._segments3d).shape)
+print(np.array(quiver._segments3d))
+
+# print(np.array(quiver.get_segments()).shape)
+# Setting the axis limits
+ax.set_xlim([-5, 5])
+ax.set_ylim([-5, 5])
+ax.set_zlim([-5, 5])
+
+def animate(i):
+    # This function updates the position of the arrow
+    # Let's make the arrow move along the x-axis by updating its starting position
+    displacement = np.array([0.1, 0, 0])  # Displacement vector
+    new_segments = np.array(quiver._segments3d) + displacement  # New segments
+    quiver.set_segments(new_segments)  # Moving the arrow along the x-axis
+    #  
+    return quiver,
+
+# Create animation
+ani = FuncAnimation(fig, animate, frames=np.linspace(0, 5, num_frames), interval=50)
+
+plt.show()

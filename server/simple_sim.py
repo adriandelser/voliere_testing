@@ -33,8 +33,8 @@ NEXT_GOAL_LIST:list = [[ [0,0,0.5], [2,2,0.5], [3,2,0.5]],
 
 
 #---------- OpTr- ACID - -----IP------
-ACS = ['60','61','62','64','65','66','67','68','69', '51', '888']
-TELLO_ACS = ['67','68','69']
+ACS = ['60','61','62','63','64','65','66','67','68','69', '51', '888']
+TELLO_ACS = ['67']
 
 
 
@@ -42,10 +42,10 @@ AC_LIST = [[f"{ID}", f"{ID}", f'192.168.1.{ID}'] for ID in ACS if ID in TELLO_AC
 AC_ID_LIST = [[_[0], _[1]] for _ in AC_LIST] # [['51', '51'], ['65', '65'], ['69', '69']]
 
 
-CASE_INFO:dict = {
-        "filename": 'cases.json',
-        "casename": 'DASC23_case_1T',
-    }
+# CASE_INFO:dict = {
+#         "filename": 'cases.json',
+#         "casename": 'DASC23_case_1T',
+#     }
 
 # Generating an example Source for population
 # population = [Source(ID=0, source_strength=0.8, position=np.array([-1., 3., 0.4]))]
@@ -71,12 +71,13 @@ class CaseMaker(Observer):
     def call(self):
         print("Called!")
         #gflow part
-        file_name = "scenebuilder.json"
-        case_name="scenebuilder"
+        file_name = "voliere.json"
+        case_name="voliere1"
         case = Cases.get_case(file_name, case_name)
         print(f"{case.vehicle_list=}, {case.buildings =}")
         # if event != "generate_case":
         #     raise NotImplementedError
+        # case.vehicle_list = case.vehicle_list[:4]
         if len(case.vehicle_list) != len(AC_LIST):
             print("Number of vehicles does not match!")
             return
@@ -84,14 +85,18 @@ class CaseMaker(Observer):
         # set_new_attribute(case, "source_strength", new_attribute_value=1)
         set_new_attribute(case, "sink_strength", new_attribute_value=5)
         set_new_attribute(case, "max_speed", new_attribute_value=0.5)
-        set_new_attribute(case, "imag_source_strength", new_attribute_value=5)
+        set_new_attribute(case, "imag_source_strength", new_attribute_value=1)
         set_new_attribute(case, "source_strength", new_attribute_value=1)
         # set_new_attribute(case, "mode", new_attribute_value="radius")
-        set_new_attribute(case, "turn_radius", new_attribute_value=0.1)
+        set_new_attribute(case, "turn_radius", new_attribute_value=0.01)
+        set_new_attribute(case,"v_free_stream_mag", new_attribute_value=0)
+        set_new_attribute(case,"ARRIVAL_DISTANCE", new_attribute_value=0.0000001)
 
-        case.mode = 'radius'
+
+
+        case.mode = 'fancy'
         case.building_detection_threshold = 10
-        case.max_avoidance_distance = 10
+        case.max_avoidance_distance = 5
         # set_new_attribute(case, "")
 
         self.fly(case)
@@ -150,9 +155,10 @@ class CaseMaker(Observer):
             print(self.swarm.tellos[0].get_position_enu())
             time.sleep(1)
             self.swarm.takeoff()
+            time.sleep(2)
             starttime = time.time()
             #make them all stop for 2 seconds
-            while time.time()-starttime <2:
+            while time.time()-starttime <4:
                 for tello in self.swarm.tellos:
                     tello.send_velocity_enu([0,0,0], heading=0)
             
@@ -162,18 +168,20 @@ class CaseMaker(Observer):
             # for the first x seconds, move the tellos to their initial positions
             while time.time()-starttime < 5:
                 
-                desired = [-0.2,-0.4,0]
+                # desired = [-0.2,-0.4,0]
                 for idx, tello in enumerate(self.swarm.tellos):
                     tello.fly_to_enu(INIT_XYZS[tello.ac_id], heading=0)
 
-            
+            while time.time()-starttime <3:
+                for tello in self.swarm.tellos:
+                    tello.send_velocity_enu([0,0,0], heading=0)
             # self.swarm.tellos[0].send_velocity_enu([0,0,0], heading=0)
 
             print('Finished moving !') #Finished 
             result = run_real_case(case=case,swarm=self.swarm,t = 500,update_every=1,stop_at_collision=True,max_avoidance_distance=20)
 
-            
-            case.to_dict(file_path="realflight_output.json")
+            t_finish = time.time()
+            case.to_dict(file_path=f"realflight_{t_finish}.json")
             # # self.swarm.move_down(int(40))
             self.swarm.land()
             voliere.stop()
@@ -191,7 +199,7 @@ class CaseMaker(Observer):
             trajectory_plot.show()
 
             # visualisation part
-            visualizer = SimulationVisualizer('realflight_output.json')
+            visualizer = SimulationVisualizer(f'realflight_{t_finish}.json')
             visualizer.show_plot()
 
 
@@ -203,15 +211,18 @@ class CaseMaker(Observer):
             print("Shutting down natnet interfaces...")
             # log.save(flight_type='fast_follow')
             # self.swarm.move_down(int(40))
+            t_finish = time.time()
+            case.to_dict(file_path=f"realflight_{t_finish}.json")
             self.swarm.land()
             # voliere.stop()
             self.swarm.end()
-
-            time.sleep(1)
+            
 
         except OSError:
             print("Natnet connection error")
             # self.swarm.move_down(int(40))
+            t_finish = time.time()
+            case.to_dict(file_path=f"realflight_{t_finish}.json")
             self.swarm.land()
             # voliere.stop()
             self.swarm.end()
